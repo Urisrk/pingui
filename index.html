@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorpresa</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
+<style>
+  :root {
+    --noche: #0e1b3d;
+    --noche2: #243a75;
+    --nieve: #f4f8ff;
+    --rojo: #d62839;
+    --pino: #1f6b45;
+    --oro: #ffd166;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: linear-gradient(var(--noche), var(--noche2));
+    color: var(--nieve);
+    overflow: hidden;
+  }
+
+  /* Pantalla inicial */
+  #inicio {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+  #btnSorpresa {
+    font: 700 clamp(1.6rem, 6vw, 2.6rem) Georgia, serif;
+    color: #fff;
+    background: var(--rojo);
+    border: 4px solid var(--nieve);
+    border-radius: 999px;
+    padding: 20px 56px;
+    cursor: pointer;
+    box-shadow: 0 8px 0 #8f1b28, 0 0 40px rgba(255, 209, 102, .35);
+    transition: transform .15s, box-shadow .15s;
+    animation: latido 1.8s ease-in-out infinite;
+  }
+  #btnSorpresa:hover { transform: translateY(-3px); }
+  #btnSorpresa:active { transform: translateY(5px); box-shadow: 0 3px 0 #8f1b28; }
+  #btnSorpresa:focus-visible, #btnCerrar:focus-visible { outline: 4px solid var(--oro); outline-offset: 4px; }
+  @keyframes latido { 50% { transform: scale(1.06); } }
+
+  /* Escena */
+  #escena {
+    position: fixed; inset: 0;
+    display: none;
+    background: linear-gradient(#0a1330 0%, #1b2f66 70%, #2d4a8f 100%);
+    overflow: hidden;
+  }
+  #escena.abierta { display: block; animation: aparece .8s ease both; }
+  @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+
+  .luna {
+    position: absolute; top: 12%; left: 10%;
+    width: 70px; height: 70px; border-radius: 50%;
+    background: #fff6d6; box-shadow: 0 0 40px 10px rgba(255, 246, 214, .35);
+  }
+  .estrella {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: #fff; animation: brillo 2.4s ease-in-out infinite;
+  }
+  @keyframes brillo { 50% { opacity: .2; } }
+
+  .guirnalda { position: absolute; top: 0; left: 0; width: 100%; height: 90px; }
+  .guirnalda path { fill: none; stroke: #0a1330; stroke-width: 2; }
+  .bombilla { animation: luz 1.6s ease-in-out infinite; }
+  @keyframes luz { 50% { opacity: .35; } }
+
+  .arbol { position: absolute; bottom: 8%; height: 62%; }
+  .arbol.izq { left: 1%; }
+  .arbol.der { right: 1%; transform: scaleX(-1); }
+
+  .suelo {
+    position: absolute; bottom: 0; left: -5%; width: 110%; height: 22%;
+    background: var(--nieve);
+    border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+  }
+
+  .nieve {
+    position: absolute; top: -10px; background: #fff; border-radius: 50%;
+    opacity: .85; animation: cae linear infinite;
+    pointer-events: none;
+  }
+  @keyframes cae { to { transform: translateY(110vh) translateX(30px); } }
+
+  .pinguino {
+    position: absolute; left: 50%; bottom: 6%;
+    height: min(72vh, 520px);
+    transform: translateX(-50%);
+    animation: entra 1s cubic-bezier(.3, 1.5, .5, 1) .3s both;
+  }
+  @keyframes entra { from { transform: translate(-50%, 120%); } to { transform: translate(-50%, 0); } }
+  .pinguino svg { height: 100%; width: auto; display: block; overflow: visible; animation: balanceo 3s ease-in-out 1.4s infinite; transform-origin: 50% 100%; }
+  @keyframes balanceo { 50% { transform: rotate(2.5deg); } }
+
+  .mensaje {
+    position: absolute; top: 9%; left: 50%; transform: translateX(-50%);
+    text-align: center; width: min(90%, 560px);
+    font-size: clamp(2rem, 8vw, 3.6rem);
+    line-height: 1.25;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+  }
+
+  #btnCerrar {
+    position: absolute; top: 14px; right: 14px; z-index: 5;
+    font: 1rem Georgia, serif; color: var(--nieve);
+    background: rgba(255, 255, 255, .12);
+    border: 2px solid var(--nieve); border-radius: 999px;
+    padding: 8px 18px; cursor: pointer;
+  }
+
+  .ramo { animation: ofrece 2.6s ease-in-out infinite; transform-origin: 262px 268px; }
+  @keyframes ofrece { 50% { transform: rotate(-4deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main id="inicio">
+  <button id="btnSorpresa" type="button">Sorpresa</button>
+</main>
+
+<section id="escena" aria-label="Pingüino navideño con un lirio rosa">
+  <button id="btnCerrar" type="button">Cerrar</button>
+
+  <div class="luna"></div>
+  <div id="estrellas"></div>
+
+  <!-- Guirnalda de luces -->
+  <svg class="guirnalda" viewBox="0 0 1000 90" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 10 Q250 90 500 10 T1000 10"/>
+    <g id="bombillas"></g>
+  </svg>
+
+  <!-- Árbol de Navidad (se repite a ambos lados) -->
+  <svg class="arbol izq" viewBox="0 0 200 300" aria-hidden="true">
+    <rect x="88" y="260" width="24" height="40" fill="#5a3a22"/>
+    <polygon points="100,10 160,95 40,95" fill="var(--pino)"/>
+    <polygon points="100,60 175,160 25,160" fill="#237a4f"/>
+    <polygon points="100,115 190,265 10,265" fill="var(--pino)"/>
+    <polygon points="100,0 106,14 121,14 109,23 113,38 100,29 87,38 91,23 79,14 94,14" fill="var(--oro)"/>
+    <circle cx="80" cy="90" r="7" fill="var(--rojo)"/>
+    <circle cx="118" cy="140" r="7" fill="var(--oro)"/>
+    <circle cx="65" cy="195" r="8" fill="#ff8fb1"/>
+    <circle cx="130" cy="225" r="8" fill="var(--rojo)"/>
+    <circle cx="95" cy="245" r="7" fill="var(--oro)"/>
+  </svg>
+  <svg class="arbol der" viewBox="0 0 200 300" aria-hidden="true">
+    <rect x="88" y="260" width="24" height="40" fill="#5a3a22"/>
+    <polygon points="100,10 160,95 40,95" fill="var(--pino)"/>
+    <polygon points="100,60 175,160 25,160" fill="#237a4f"/>
+    <polygon points="100,115 190,265 10,265" fill="var(--pino)"/>
+    <polygon points="100,0 106,14 121,14 109,23 113,38 100,29 87,38 91,23 79,14 94,14" fill="var(--oro)"/>
+    <circle cx="80" cy="90" r="7" fill="var(--oro)"/>
+    <circle cx="118" cy="140" r="7" fill="var(--rojo)"/>
+    <circle cx="65" cy="195" r="8" fill="var(--rojo)"/>
+    <circle cx="130" cy="225" r="8" fill="#ff8fb1"/>
+    <circle cx="95" cy="245" r="7" fill="var(--rojo)"/>
+  </svg>
+
+  <div class="suelo"></div>
+  <div id="copos"></div>
+
+  <p class="mensaje">Te quieroo</p>
+
+  <!-- Pingüino -->
+  <div class="pinguino">
+    <svg viewBox="0 0 440 470" role="img" aria-label="Pingüino redondito con gorro de Navidad que sostiene un lirio rosa en la mano">
+      <defs>
+        <radialGradient id="gCuerpo" cx="38%" cy="28%" r="85%"><stop offset="0" stop-color="#52689b"/><stop offset="1" stop-color="#18223f"/></radialGradient>
+        <radialGradient id="gVientre" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f1e6cf"/></radialGradient>
+        <linearGradient id="gOro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f6a53a"/></linearGradient>
+        <linearGradient id="gPico" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb255"/><stop offset="1" stop-color="#ee7d1c"/></linearGradient>
+        <linearGradient id="gGorro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0485a"/><stop offset="1" stop-color="#b5192b"/></linearGradient>
+        <linearGradient id="gPetalo" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f06292"/><stop offset="1" stop-color="#ffd0e1"/></linearGradient>
+        <path id="petalo" d="M0 0 Q17 -26 0 -62 Q-17 -26 0 0Z"/>
+      </defs>
+
+      <g transform="translate(50 26)">
+        <!-- Sombra y pies -->
+        <ellipse cx="170" cy="440" rx="118" ry="8" fill="#000" opacity=".22"/>
+        <g fill="url(#gPico)" stroke="#d9760f" stroke-width="2">
+          <ellipse cx="124" cy="428" rx="33" ry="12"/><ellipse cx="216" cy="428" rx="33" ry="12"/>
+        </g>
+        <path d="M106 430 L104 422 M124 432 L124 424 M142 430 L144 422 M198 430 L196 422 M216 432 L216 424 M234 430 L236 422" stroke="#d9760f" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Cuerpo redondito -->
+        <path d="M170 70 C70 70 40 200 44 300 C48 390 100 432 170 432 C240 432 292 390 296 300 C300 200 270 70 170 70Z" fill="url(#gCuerpo)"/>
+        <!-- Pechera crema desde la garganta hasta la barriga -->
+        <path d="M170 164 C132 164 96 236 96 322 C98 390 132 422 170 422 C208 422 242 390 244 322 C244 236 208 164 170 164Z" fill="url(#gVientre)"/>
+
+
+        <!-- Aleta izquierda -->
+        <path d="M66 232 C26 264 22 338 54 360 C82 340 92 282 86 238 Z" fill="#1b2644"/>
+
+        <!-- Cara -->
+        <circle cx="124" cy="168" r="13" fill="#ff9fb8" opacity=".55"/><circle cx="216" cy="168" r="13" fill="#ff9fb8" opacity=".55"/>
+        <circle cx="130" cy="142" r="10" fill="#0b0f1a"/><circle cx="210" cy="142" r="10" fill="#0b0f1a"/>
+        <circle cx="134" cy="138" r="4" fill="#fff"/><circle cx="214" cy="138" r="4" fill="#fff"/>
+        <circle cx="127" cy="147" r="1.8" fill="#fff"/><circle cx="207" cy="147" r="1.8" fill="#fff"/>
+        <path d="M155 156 Q170 146 185 156 Q181 174 170 178 Q159 174 155 156Z" fill="url(#gPico)" stroke="#d9760f" stroke-width="1.5"/>
+        <path d="M158 161 Q170 166 182 161" stroke="#d9760f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Gorro de Navidad -->
+        <g transform="rotate(-6 170 100)">
+          <path d="M100 100 C102 44 140 8 198 20 C232 28 246 64 240 100 Z" fill="url(#gGorro)"/>
+          <path d="M200 22 C232 30 246 64 240 100 L214 100 C222 66 214 42 200 22Z" fill="#8f1424" opacity=".35"/>
+          <g fill="#fff">
+            <rect x="90" y="84" width="160" height="32" rx="16"/>
+            <circle cx="104" cy="100" r="12"/><circle cx="130" cy="114" r="11"/><circle cx="160" cy="116" r="11"/><circle cx="190" cy="116" r="11"/><circle cx="218" cy="114" r="11"/><circle cx="238" cy="100" r="12"/>
+          </g>
+          <path d="M100 90 Q170 78 240 90" stroke="#e6edf8" stroke-width="3" fill="none" opacity=".8"/>
+          <g fill="#fff"><circle cx="214" cy="20" r="18"/><circle cx="202" cy="14" r="8"/><circle cx="226" cy="14" r="8"/><circle cx="214" cy="34" r="8"/></g>
+        </g>
+
+        <!-- Aleta derecha levantada con el lirio en la mano -->
+        <g class="ramo">
+          <path d="M262 268 Q314 258 324 210" stroke="#1b2644" stroke-width="34" stroke-linecap="round" fill="none"/>
+          <path d="M322 272 Q326 198 330 120" stroke="#3a9d5d" stroke-width="6" stroke-linecap="round" fill="none"/>
+          <path d="M327 156 Q300 140 288 148 Q304 166 327 156Z" fill="#3a9d5d"/>
+          <path d="M323 254 Q352 240 362 250 Q348 266 323 254Z" fill="#2f8450"/>
+          <path d="M306 218 Q324 212 344 204" stroke="#2c3b66" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <path d="M304 231 Q322 225 342 217" stroke="#24325a" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <g transform="translate(330 120) rotate(10) scale(.9)">
+            <use href="#petalo" fill="url(#gPetalo)" transform="rotate(-66)"/>
+            <use href="#petalo" fill="url(#gPetalo)" transform="rotate(66)"/>
+            <use href="#petalo" fill="url(#gPetalo)" transform="rotate(-33)"/>
+            <use href="#petalo" fill="url(#gPetalo)" transform="rotate(33)"/>
+            <use href="#petalo" fill="url(#gPetalo)"/>
+            <path d="M0 -6 L0 -44" stroke="#d6538a" stroke-width="2" stroke-linecap="round"/>
+            <path d="M0 -6 L-12 -36 M0 -6 L2 -40 M0 -6 L14 -34" stroke="#e8a33d" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="-12" cy="-37" r="3.2" fill="#b5651d"/><circle cx="2" cy="-41" r="3.2" fill="#b5651d"/><circle cx="14" cy="-35" r="3.2" fill="#b5651d"/>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<script>
+  const inicio = document.getElementById('inicio');
+  const escena = document.getElementById('escena');
+
+  // Estrellas
+  const estrellas = document.getElementById('estrellas');
+  for (let i = 0; i < 40; i++) {
+    const e = document.createElement('span');
+    e.className = 'estrella';
+    e.style.left = Math.random() * 100 + '%';
+    e.style.top = Math.random() * 45 + '%';
+    e.style.animationDelay = (Math.random() * 2.4) + 's';
+    estrellas.appendChild(e);
+  }
+
+  // Bombillas de la guirnalda (siguen la curva Q250 90 500 10 T1000 10)
+  const colores = ['#ff4d6d', '#ffd166', '#6ee7b7', '#7cc4ff', '#ff9bd2'];
+  const bombillas = document.getElementById('bombillas');
+  const NS = 'http://www.w3.org/2000/svg';
+  function punto(t, p0, p1, p2) {
+    const u = 1 - t;
+    return [u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0], u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]];
+  }
+  // La curva T refleja el punto de control: segundo tramo con control (750, -70)
+  const tramos = [[[0,10],[250,90],[500,10]], [[500,10],[750,-70],[1000,10]]];
+  let n = 0;
+  tramos.forEach(tr => {
+    for (let i = 0; i < 9; i++) {
+      const [x, y] = punto(i / 9 + 0.04, ...tr);
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y + 4); c.setAttribute('r', 6);
+      c.setAttribute('fill', colores[n % colores.length]);
+      c.setAttribute('class', 'bombilla');
+      c.style.animationDelay = (n % 5) * 0.3 + 's';
+      bombillas.appendChild(c);
+      n++;
+    }
+  });
+
+  // Nieve
+  const copos = document.getElementById('copos');
+  for (let i = 0; i < 45; i++) {
+    const c = document.createElement('span');
+    const s = 3 + Math.random() * 6;
+    c.className = 'nieve';
+    c.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;` +
+      `animation-duration:${6 + Math.random() * 8}s;animation-delay:-${Math.random() * 10}s`;
+    copos.appendChild(c);
+  }
+
+  document.getElementById('btnSorpresa').addEventListener('click', () => {
+    inicio.style.display = 'none';
+    escena.classList.add('abierta');
+    document.getElementById('btnCerrar').focus();
+  });
+  document.getElementById('btnCerrar').addEventListener('click', () => {
+    escena.classList.remove('abierta');
+    inicio.style.display = 'grid';
+    document.getElementById('btnSorpresa').focus();
+  });
+</script>
+</body>
+</html>
